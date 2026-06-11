@@ -4,9 +4,9 @@
 
 | Item | Local source | Current Vercel production |
 | --- | --- | --- |
-| Frontend homepage | Includes 3 subscription tiers, China-market model catalog, and Codex / Claude comparison | Production serves the same portal title and bundle from deployment `dpl_9H7A6SuWPpjhChpBzfwzVCFVixkC` |
+| Frontend homepage | Includes 3 subscription tiers, China-market model catalog, and Codex / Claude comparison | Production serves the same portal title and bundle from the latest Ready `main` deployment |
 | Auth mode | Supabase email OTP only; `/login` and `/register` no longer require passwords in Supabase mode | Built with `VITE_AUTH_PROVIDER=supabase` and Supabase env vars |
-| Vercel status | Built from `vercel.json` and committed source | Latest production deployment is `dpl_9H7A6SuWPpjhChpBzfwzVCFVixkC`, Ready, created from commit `a35e0cf7` |
+| Vercel status | Built from `vercel.json` and committed source | Latest production deployment is Ready on `main`; use Vercel's project page for the exact deployment ID |
 | Production aliases | N/A | `https://liupeizhou.cn`, `https://www.liupeizhou.cn`, `https://sub2api-official-api-portal.vercel.app` |
 | Runtime role | Full local gateway with Docker Compose | Static Vue portal only |
 | Backend API | `http://127.0.0.1:8080` locally | Must be provided by an external Sub2API backend through `VITE_API_BASE_URL` |
