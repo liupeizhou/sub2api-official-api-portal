@@ -7,16 +7,16 @@ vi.mock('@/api/admin/accounts', () => ({
 import { buildModelMappingObject, getModelsByPlatform, splitModelMappingObject } from '../useModelWhitelist'
 
 describe('useModelWhitelist', () => {
-  it('openai 模型列表包含 GPT-5.4 官方快照', () => {
+  it('openai 槽位模型列表包含通义千问官方模型', () => {
     const models = getModelsByPlatform('openai')
 
-    expect(models).toContain('gpt-5.4')
-    expect(models).toContain('gpt-5.4-mini')
-    expect(models).toContain('gpt-5.4-2026-03-05')
-    expect(models).toContain('codex-auto-review')
+    expect(models).toContain('qwen3-max')
+    expect(models).toContain('qwen-plus')
+    expect(models).toContain('qwen-flash')
+    expect(models).toContain('qwen3-coder-plus')
   })
 
-  it('openai 模型列表不再暴露已下线的 ChatGPT 登录 Codex 模型', () => {
+  it('openai 槽位模型列表不再暴露旧 OpenAI 登录模型', () => {
     const models = getModelsByPlatform('openai')
 
     expect(models).not.toContain('gpt-5')
@@ -27,85 +27,84 @@ describe('useModelWhitelist', () => {
     expect(models).not.toContain('gpt-5.2-codex')
   })
 
-  it('antigravity 模型列表包含图片模型兼容项', () => {
+  it('antigravity 槽位模型列表包含 MiniMax / 阶跃星辰模型', () => {
     const models = getModelsByPlatform('antigravity')
 
-    expect(models).toContain('gemini-2.5-flash-image')
-    expect(models).toContain('gemini-3.1-flash-image')
-    expect(models).toContain('gemini-3-pro-image')
+    expect(models).toContain('MiniMax-M2.7')
+    expect(models).toContain('step-3.7-flash')
+    expect(models).toContain('step-2-mini')
   })
 
-  it('Claude 模型列表包含 Opus 4.8', () => {
-    expect(getModelsByPlatform('claude')).toContain('claude-opus-4-8')
-    expect(getModelsByPlatform('antigravity')).toContain('claude-opus-4-8')
+  it('claude 槽位模型列表包含 GLM 模型', () => {
+    expect(getModelsByPlatform('claude')).toContain('glm-4.6')
+    expect(getModelsByPlatform('claude')).toContain('glm-5-flash')
   })
 
-  it('gemini 模型列表包含原生生图模型', () => {
+  it('gemini 槽位模型列表包含 DeepSeek 模型', () => {
     const models = getModelsByPlatform('gemini')
 
-    expect(models).toContain('gemini-2.5-flash-image')
-    expect(models).toContain('gemini-3.1-flash-image')
-    expect(models.indexOf('gemini-3.1-flash-image')).toBeLessThan(models.indexOf('gemini-2.0-flash'))
-    expect(models.indexOf('gemini-2.5-flash-image')).toBeLessThan(models.indexOf('gemini-2.5-flash'))
+    expect(models).toContain('deepseek-v4-pro')
+    expect(models).toContain('deepseek-v4-flash')
+    expect(models).toContain('deepseek-reasoner')
   })
 
-  it('antigravity 模型列表会把新的 Gemini 图片模型排在前面', () => {
+  it('antigravity 模型列表会把 MiniMax 和阶跃核心模型排在前面', () => {
     const models = getModelsByPlatform('antigravity')
 
-    expect(models.indexOf('gemini-3.1-flash-image')).toBeLessThan(models.indexOf('gemini-2.5-flash'))
-    expect(models.indexOf('gemini-2.5-flash-image')).toBeLessThan(models.indexOf('gemini-2.5-flash-lite'))
+    expect(models.indexOf('MiniMax-M2.7')).toBeLessThan(models.indexOf('step-1-8k'))
+    expect(models.indexOf('step-3.7-flash')).toBeLessThan(models.indexOf('step-1-8k'))
   })
 
   it('whitelist 模式会忽略通配符条目', () => {
-    const mapping = buildModelMappingObject('whitelist', ['claude-*', 'gemini-3.1-flash-image'], [])
+    const mapping = buildModelMappingObject('whitelist', ['glm-*', 'qwen-plus'], [])
     expect(mapping).toEqual({
-      'gemini-3.1-flash-image': 'gemini-3.1-flash-image'
+      'qwen-plus': 'qwen-plus'
     })
   })
 
-  it('whitelist 模式会保留 GPT-5.4 官方快照的精确映射', () => {
-    const mapping = buildModelMappingObject('whitelist', ['gpt-5.4-2026-03-05'], [])
+  it('whitelist 模式会保留 Qwen 官方快照的精确映射', () => {
+    const mapping = buildModelMappingObject('whitelist', ['qwen-plus-2025-12-01'], [])
 
     expect(mapping).toEqual({
-      'gpt-5.4-2026-03-05': 'gpt-5.4-2026-03-05'
+      'qwen-plus-2025-12-01': 'qwen-plus-2025-12-01'
     })
   })
 
-  it('whitelist keeps GPT-5.4 mini exact mappings', () => {
-    const mapping = buildModelMappingObject('whitelist', ['gpt-5.4-mini'], [])
+  it('whitelist keeps Qwen Flash exact mappings', () => {
+    const mapping = buildModelMappingObject('whitelist', ['qwen-flash'], [])
 
     expect(mapping).toEqual({
-      'gpt-5.4-mini': 'gpt-5.4-mini'
+      'qwen-flash': 'qwen-flash'
     })
   })
 
   it('combined 模式会同时保留白名单身份映射和模型映射', () => {
     const mapping = buildModelMappingObject(
       'combined',
-      ['gpt-5.4', 'claude-*'],
+      ['qwen-plus', 'glm-*'],
       [
-        { from: 'gpt-latest', to: 'gpt-5.4' },
-        { from: 'gpt-5.4', to: 'gpt-5.4-mini' }
+        { from: 'qwen-latest', to: 'qwen-plus' },
+        { from: 'qwen-plus', to: 'qwen-flash' }
       ]
     )
 
     expect(mapping).toEqual({
-      'gpt-5.4': 'gpt-5.4-mini',
-      'gpt-latest': 'gpt-5.4'
+      'qwen-plus': 'qwen-flash',
+      'qwen-latest': 'qwen-plus'
     })
   })
 
   it('splitModelMappingObject 会把身份映射还原成白名单，其余保留为映射', () => {
     const parsed = splitModelMappingObject({
-      'gpt-5.4': 'gpt-5.4',
-      'gpt-latest': 'gpt-5.4',
-      ' ': 'gpt-empty',
+      'qwen-plus': 'qwen-plus',
+      'qwen-latest': 'qwen-plus',
+      ' ': 'qwen-empty',
       broken: 123
     })
 
     expect(parsed).toEqual({
-      allowedModels: ['gpt-5.4'],
-      modelMappings: [{ from: 'gpt-latest', to: 'gpt-5.4' }]
+      allowedModels: ['qwen-plus'],
+      modelMappings: [{ from: 'qwen-latest', to: 'qwen-plus' }]
     })
   })
 })

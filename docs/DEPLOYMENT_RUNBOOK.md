@@ -4,8 +4,9 @@
 
 | Item | Local source | Current Vercel production |
 | --- | --- | --- |
-| Frontend homepage | Includes 3 subscription tiers and Codex / Claude comparison | Does not yet include the new pricing section |
-| Vercel status | Ready to rebuild from `vercel.json` | Ready deployment created on 2026-06-10 09:30:05 CST |
+| Frontend homepage | Includes 3 subscription tiers, China-market model catalog, and Codex / Claude comparison | Production is still built from old dirty upstream snapshot until the current local fixes are redeployed |
+| Auth mode | Supabase email OTP only; `/login` and `/register` no longer require passwords in Supabase mode | Must be rebuilt with `VITE_AUTH_PROVIDER=supabase` and Supabase env vars |
+| Vercel status | Ready to rebuild from `vercel.json` | Latest production deployment is `dpl_AjGdUmaoUMSJTpWWKHFpfccRFoDN`, Ready, created from upstream commit `434af38f` |
 | Production aliases | N/A | `https://liupeizhou.cn`, `https://www.liupeizhou.cn`, `https://sub2api-official-api-portal.vercel.app` |
 | Runtime role | Full local gateway with Docker Compose | Static Vue portal only |
 | Backend API | `http://127.0.0.1:8080` locally | Must be provided by an external Sub2API backend through `VITE_API_BASE_URL` |
@@ -55,12 +56,27 @@ VITE_API_BASE_URL=https://your-gateway.example.com/api/v1
 
 Do not put service-role keys, upstream provider API keys, database passwords, JWT secrets, or payment provider secrets in `VITE_*` variables. `VITE_*` values are public browser bundle data.
 
+## GitHub Case Notes
+
+Comparable Vite + Supabase Auth + Vercel projects reviewed:
+
+- `l-filice89/team-map` - Vite app using Supabase Auth, Edge Functions, Storage, and Vercel. Its README keeps only Supabase URL and publishable key in frontend env, and explicitly keeps the service-role key out of `VITE_*`.
+- `staszko123/Oceniator-V2` - React/Vite portal with Supabase Auth and Vercel deployment.
+- `Problemsolver0070/llmfixer-app` - self-serve console using Vite, Supabase auth, and billing.
+- `S-KH-Repo/react-vite-supabase-auth-template` - Vite Supabase auth template.
+
+Takeaway for this project: keep the Vercel app as a public static portal, use Supabase only for browser-safe OTP sessions, and keep provider keys, service-role keys, billing fulfillment, and gateway metering on the backend side.
+
 ## Local Verification
 
 ```bash
 docker compose -f deploy/docker-compose.dev.yml up --build -d
 curl http://127.0.0.1:8080/health
 pnpm --dir frontend run typecheck
+pnpm --dir frontend run test:run
+pnpm --dir frontend run lint:check
+pnpm --dir frontend run build
+pnpm --dir frontend audit --prod
 ```
 
 Smoke-test user:
@@ -94,5 +110,14 @@ Before pushing:
 ```bash
 git status --short
 pnpm --dir frontend run typecheck
-go test ./backend/internal/service
+pnpm --dir frontend run test:run
+pnpm --dir frontend run lint:check
+pnpm --dir frontend run build
+pnpm --dir frontend audit --prod
 ```
+
+Backend Go tests require a local Go toolchain or the Docker build path. The current Vercel portal changes are frontend-only.
+
+## Current Launch Gate
+
+As of 2026-06-11, local validation is green for the frontend portal, but production has not yet been redeployed from the current local working tree. The current Vercel deployment metadata still points at an old upstream commit and `gitDirty=1`, so any browser report of password login or `/auth/register` 404 is expected until a fresh deploy is promoted.
