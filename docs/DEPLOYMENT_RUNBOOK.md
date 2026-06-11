@@ -4,9 +4,9 @@
 
 | Item | Local source | Current Vercel production |
 | --- | --- | --- |
-| Frontend homepage | Includes 3 subscription tiers, China-market model catalog, and Codex / Claude comparison | Production is still built from old dirty upstream snapshot until the current local fixes are redeployed |
-| Auth mode | Supabase email OTP only; `/login` and `/register` no longer require passwords in Supabase mode | Must be rebuilt with `VITE_AUTH_PROVIDER=supabase` and Supabase env vars |
-| Vercel status | Ready to rebuild from `vercel.json` | Latest production deployment is `dpl_AjGdUmaoUMSJTpWWKHFpfccRFoDN`, Ready, created from upstream commit `434af38f` |
+| Frontend homepage | Includes 3 subscription tiers, China-market model catalog, and Codex / Claude comparison | Production serves the same portal title and bundle from deployment `dpl_9H7A6SuWPpjhChpBzfwzVCFVixkC` |
+| Auth mode | Supabase email OTP only; `/login` and `/register` no longer require passwords in Supabase mode | Built with `VITE_AUTH_PROVIDER=supabase` and Supabase env vars |
+| Vercel status | Built from `vercel.json` and committed source | Latest production deployment is `dpl_9H7A6SuWPpjhChpBzfwzVCFVixkC`, Ready, created from commit `a35e0cf7` |
 | Production aliases | N/A | `https://liupeizhou.cn`, `https://www.liupeizhou.cn`, `https://sub2api-official-api-portal.vercel.app` |
 | Runtime role | Full local gateway with Docker Compose | Static Vue portal only |
 | Backend API | `http://127.0.0.1:8080` locally | Must be provided by an external Sub2API backend through `VITE_API_BASE_URL` |
@@ -44,6 +44,14 @@ The current Vercel optimization:
 
 - `/assets/*` uses `Cache-Control: public, max-age=31536000, immutable`.
 - CSP keeps scripts/styles self-hosted and allows HTTPS/WSS connections so the portal can move between Supabase and the production gateway API without editing `vercel.json` for every API domain change.
+
+When deploying from macOS external drives, remove AppleDouble resource-fork files before `vercel deploy --prebuilt`; otherwise Vercel can accept the deployment but leave it `BLOCKED` with no build logs:
+
+```bash
+find backend/internal/web/dist .vercel/output -name '._*' -type f -delete
+```
+
+This repo also tracks `.vercelignore` patterns for `._*`, `.DS_Store`, and `__MACOSX`.
 
 ## Required Vercel Environment Variables
 
@@ -118,6 +126,6 @@ pnpm --dir frontend audit --prod
 
 Backend Go tests require a local Go toolchain or the Docker build path. The current Vercel portal changes are frontend-only.
 
-## Current Launch Gate
+## Current Launch Status
 
-As of 2026-06-11, local validation is green for the frontend portal, but production has not yet been redeployed from the current local working tree. The current Vercel deployment metadata still points at an old upstream commit and `gitDirty=1`, so any browser report of password login or `/auth/register` 404 is expected until a fresh deploy is promoted.
+As of 2026-06-11, local validation is green for the frontend portal and production has been redeployed from the current GitHub commit. `https://liupeizhou.cn` redirects to `https://www.liupeizhou.cn`, and `/`, `/login`, `/register`, and `/admin/dashboard` all return the current SPA bundle titled `老刘给老孙的验证站`.
